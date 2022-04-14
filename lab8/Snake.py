@@ -52,11 +52,23 @@ def genApple():
     return (x,y)
 
 #some magic with framerate
-fr=10
+fr=5
 c = pygame.time.Clock()
 its=0
 
 while running:
+
+    
+    #checking for direction buttons pressed
+    if pygame.key.get_pressed()[pygame.K_UP] and not di==3:
+        di=1
+    elif pygame.key.get_pressed()[pygame.K_DOWN] and not di==1:
+        di=3
+    elif pygame.key.get_pressed()[pygame.K_RIGHT] and not di==2:
+        di=0
+    elif pygame.key.get_pressed()[pygame.K_LEFT] and not di ==0:
+        di=2
+
     #some another magic this code to work
     c.tick(fr)
     for event in pygame.event.get():
@@ -150,7 +162,7 @@ while running:
             snake.append(end)
 
         snake[0]=(x0,y0)
-
+        
         #checking for direction buttons pressed
         if pygame.key.get_pressed()[pygame.K_UP] and not di==3:
             di=1
@@ -160,6 +172,7 @@ while running:
             di=0
         elif pygame.key.get_pressed()[pygame.K_LEFT] and not di ==0:
             di=2
+
     else:
         screen.blit(text2,(400,400))
 
