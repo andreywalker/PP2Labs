@@ -4,7 +4,7 @@ import random
  
 pygame.init()
  
-FPS = 40
+fps = 30
 FramePerSec = pygame.time.Clock()
 
 f1 = pygame.font.Font(None, 60)
@@ -48,10 +48,16 @@ class Enemy(pygame.sprite.Sprite):
             return self.rect 
  
 class Coin(pygame.sprite.Sprite):
+      
       def __init__(self):
         super().__init__() 
-        self.image = pygame.image.load("coin.png")
-        self.surf= pygame.transform.scale(self.image,(20,30))
+        self.cim=pygame.image.load("coin.png")
+        self.cim5=pygame.image.load("Coin5.png")
+        self.image = random.choice((self.cim,self.cim5))
+        if self.image==self.cim:
+          self.surf= pygame.transform.scale(self.image,(20,30))
+        else:
+          self.surf= pygame.transform.scale(self.image,(30,45))
         self.rect=self.surf.get_rect()
         self.rect.center=(random.randint(40,360),0) 
  
@@ -66,6 +72,8 @@ class Coin(pygame.sprite.Sprite):
 
       def getRect(self):
             return self.rect 
+      def is5(self):
+        return (self.image is self.cim5)
  
  
 class Player(pygame.sprite.Sprite):
@@ -106,13 +114,21 @@ while True:
             sys.exit()
     if P1.getRect().colliderect(E1.getRect()):isDead=True
     if P1.getRect().colliderect(C1.getRect()): 
+      if not C1.is5():
         coins=coins+1
+        C1=Coin()
+        print(coins)
+      else:
+        coins=coins+5
         C1=Coin()
         print(coins)
     if not isDead:
         P1.update()
         E1.move()
         C1.move()
+    if coins>=30 and fps==30:
+      fps=fps+10
+    
      
     DISPLAYSURF.blit(fonsurf,fonrect)
     P1.draw(DISPLAYSURF)
@@ -129,4 +145,4 @@ while True:
 
 
     pygame.display.update()
-    FramePerSec.tick(FPS)       
+    FramePerSec.tick(fps)       

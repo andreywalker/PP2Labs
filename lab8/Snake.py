@@ -1,4 +1,6 @@
-from random import randrange
+from random import randint, randrange
+from pygame.locals import *
+import random
 import pygame
 pygame.init()
 screen=pygame.display.set_mode((800,800))
@@ -25,9 +27,11 @@ text2 = f1.render("FAILURE", True,(200,15,15))
 #snake's parts array
 snake=[]
 snake.append((x0,y0))
-
 snake.append((x0-im,y0))
 
+
+#eaten apples counter
+eatenApples=0
 
 #some walls
 walls=[]
@@ -49,25 +53,26 @@ def genApple():
         if snake[i][0]==x and snake[i][1]==y:
             x=genApple()
             y=genApple()
-    return (x,y)
+    aim=pygame.image.load("apple.png")
+    aim2=pygame.image.load("apple2.png")
+    image = random.choice((aim,aim2))
+    is1=False
+    if image==aim:
+        is1=True
+        surf= pygame.transform.scale(image,(im,im))
+    else:
+        is1=False
+        surf= pygame.transform.scale(image,(1.5*im,1.5*im))
+    return (x,y,surf, is1)
 
 #some magic with framerate
 fr=5
 c = pygame.time.Clock()
 its=0
+itss=0
 
 while running:
 
-    
-    #checking for direction buttons pressed
-    if pygame.key.get_pressed()[pygame.K_UP] and not di==3:
-        di=1
-    elif pygame.key.get_pressed()[pygame.K_DOWN] and not di==1:
-        di=3
-    elif pygame.key.get_pressed()[pygame.K_RIGHT] and not di==2:
-        di=0
-    elif pygame.key.get_pressed()[pygame.K_LEFT] and not di ==0:
-        di=2
 
     #some another magic this code to work
     c.tick(fr)
@@ -83,7 +88,7 @@ while running:
     screen.fill((0,0,0))
 
     f1 = pygame.font.Font(None, 20)
-    text1 = f1.render(str(x0)+" "+str(y0), True,(0, 200, 250))
+    text1 = f1.render(str(eatenApples), True,(0, 200, 250))
     screen.blit(text1, (10, 50))
 
     #checking for collision with walls
@@ -103,15 +108,38 @@ while running:
         if di ==0 and x0+im==apples[i][0] and y0==apples[i][1]:
             ate=True
             eatenApple=i
+            if apples[i][3]:
+                eatenApples=eatenApples+1
+                print(1)
+            else:
+                eatenApples=eatenApples+2
         elif di ==2 and x0-im==apples[i][0] and y0==apples[i][1]:
             ate=True
             eatenApple=i
+            if apples[i][3]:
+                eatenApples=eatenApples+1
+                print(1)
+            else:
+                eatenApples=eatenApples+2
+                print(2)
         elif di ==1 and x0==apples[i][0] and y0-im==apples[i][1]:
             ate=True
             eatenApple=i
+            if apples[i][3]:
+                eatenApples=eatenApples+1
+                print(1)
+            else:
+                eatenApples=eatenApples+2
+                print(2)
         elif di ==3 and x0==apples[i][0]  and y0+im==apples[i][1]:
             ate=True
             eatenApple=i
+            if apples[i][3]:
+                eatenApples=eatenApples+1
+                print(1)
+            else:
+                eatenApples=eatenApples+2
+                print(2)
 
 
     #checking for collision with tail
@@ -180,6 +208,11 @@ while running:
     if ate:
         apples.pop(eatenApple)
     
+    if itss>=50 and len(apples)>0:
+        itss=0
+        apples.pop(randint(0,len(apples)-1))
+    else:
+        itss=itss+1
 
     #drawing walls
     for i in range(0,len(walls)-1):
@@ -193,11 +226,16 @@ while running:
     for i in range(1, len(snake)):
         pygame.draw.circle(screen,(60,180,160),snake[i],im/2)
 
-    print(str(ate)+"         "+str(eatenApple)+"      "+str(apples))
+    #print(str(ate)+"         "+str(eatenApple)+"      "+str(apples))
 
     #drawing apples
     for i in range(0,len(apples)-1):
-        pygame.draw.circle(screen,(250,0,0),apples[i],im/2)
+        screen.blit(apples[i][2],(apples[i][0]-im,apples[i][1]-im))
+    
+
+    #making faster
+    if eatenApples>=30 and fr==5:
+        fr=40
 
     pygame.display.update()
     if not isDead:
