@@ -2,9 +2,22 @@ from random import randint, randrange
 from pygame.locals import *
 import random
 import pygame
+import psycopg2
+import time
+
+conn = psycopg2.connect(dbname='postgres', user='postgres', password='53515759sql', host='localhost')
+cursor = conn.cursor()
+
+tname="st0"
+
+cursor.execute("CREATE TABLE IF NOT EXISTS "+tname+"(nick text, score int)")
+
 pygame.init()
 screen=pygame.display.set_mode((800,800))
+
+
 running=True
+
 
 #вводим сеточную единицу измерения
 im=40
@@ -19,6 +32,9 @@ di=0
 
 #collision happend variable
 isDead=False
+
+nick=""
+score=0
 
 #prepairing text for screen of death (not blue))
 f1 = pygame.font.Font(None, 60)
@@ -40,7 +56,6 @@ for i in range(1,9):
     walls.append(walls[i-1].move(im,0))
 
 apples=[]
-
 
 def genApple():
     x=randrange(0,800,im)
@@ -65,11 +80,73 @@ def genApple():
         surf= pygame.transform.scale(image,(1.5*im,1.5*im))
     return (x,y,surf, is1)
 
+def insert(nick, num):
+    cursor.execute("INSERT INTO "+tname+" VALUES ('"+nick+"' , "+str(num)+")")
+
+def update(nick,num):
+    if f[0][0]<num:
+        cursor.execute("UPDATE "+tname+" SET score = "+str(num)+" WHERE nick = '"+nick+"'")
+    
+
+
 #some magic with framerate
-fr=5
+fr=10
 c = pygame.time.Clock()
 its=0
 itss=0
+
+
+
+#cleaning the screen
+screen.fill((0,0,0))
+#print("filled")
+
+#some welcome text
+f3 = pygame.font.Font(None, 30)
+
+text3 = f3.render("eNtэr your NickNAme u$iNg TERMINAl", True,(200,70,50))
+#print("texted")
+    
+screen.blit(text3, (400,600))
+#print("blited")
+mim=pygame.image.load("Menu.png")
+surf= pygame.transform.scale(mim,(600,400))
+rect=surf.get_rect()
+rect.center=(400,200) 
+#print("rected")
+screen.blit(surf,rect)
+#print("drawed")
+pygame.display.update()
+
+nick=input("Write YouR NickName Here: ")
+text3 = f3.render("Wэlcome "+nick, True,(50,200,70))
+#cleaning the screen
+screen.fill((0,0,0))
+screen.blit(surf,rect)
+screen.blit(text3, (400,600))
+
+pygame.display.update()
+cursor.execute("SELECT score FROM "+tname+" WHERE EXISTS (SELECT nick FROM "+tname+" WHERE nick = '"+nick+"')")
+f=cursor.fetchall()
+
+pygame.time.delay(4000)
+
+
+def save(nick, num):
+    if not f:
+        insert(nick,eatenApples )
+    else:
+        update(nick, eatenApples)
+    screen.fill((0,0,0))
+    screen.blit(surf,rect)
+    #print("drawed")
+    
+    text3 = f3.render(nick+", your Score is "+str(num), True,(50,200,70))
+    screen.blit(text3, (400,600))
+    pygame.display.update()
+    pygame.time.delay(3500)
+    cursor.execute("COMMIT")
+    
 
 while running:
 
@@ -79,6 +156,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+            save(nick, eatenApples)
     
     #snake ate apple variables
     ate=False
@@ -202,7 +280,8 @@ while running:
             di=2
 
     else:
-        screen.blit(text2,(400,400))
+        save(nick, eatenApples)
+        running=False
 
     #making apple disappear after eating
     if ate:
@@ -235,7 +314,7 @@ while running:
 
     #making faster
     if eatenApples>=30 and fr==5:
-        fr=40
+        fr=20
 
     pygame.display.update()
     if not isDead:
@@ -244,5 +323,35 @@ while running:
         else:
             its=0
             apples.append(genApple())
+'''
+else:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            menu=False
+
+    #cleaning the screen
+    screen.fill((0,0,0))
+
+    #some welcome text
+    f3 = pygame.font.Font(None, 30)
     
+    text3 = f3.render("eNtэr your NickNAme u$iNg TERMINAl", True,(200,70,50))
         
+    screen.blit(text3, (400,600))
+
+    mim=pygame.image.load("Menu.png")
+    surf= pygame.transform.scale(mim,(600,400))
+    rect=surf.get_rect()
+    rect.center=(400,200) 
+    screen.blit(surf,rect)
+
+    nick=input()
+    text1 = f3.render("Wэlcome "+nick, True,(50,200,70))
+    #cleaning the screen
+    screen.fill((0,0,0))
+    screen.blit(surf,rect)
+    screen.blit(text3, (400,600))
+    menu=False
+    running=True
+
+'''

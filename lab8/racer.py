@@ -4,7 +4,7 @@ import random
  
 pygame.init()
  
-fps = 30
+fps = 50
 FramePerSec = pygame.time.Clock()
 
 f1 = pygame.font.Font(None, 60)
@@ -126,8 +126,10 @@ while True:
         P1.update()
         E1.move()
         C1.move()
-    if coins>=30 and fps==30:
+    if coins>=30 and fps==50:
       fps=fps+10
+    elif coins>=100 and fps==60:
+        fps =fps+10
     
      
     DISPLAYSURF.blit(fonsurf,fonrect)
