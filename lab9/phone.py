@@ -69,30 +69,26 @@ def delete(contact):
             cursor.execute("DELETE FROM "+tname+" WHERE number = '"+contact+"'")
     else:
         cursor.execute("DELETE FROM "+tname+" ")
-def show(fil="all",pattern=" "):
+def show(page =1, fil="all",pattern=" "):
+    page-=1
     if fil=="all":
-        cursor.execute("SELECT * FROM "+tname+" ")
+        cursor.execute("SELECT * FROM "+tname+" ORDER BY name LIMIT 5 OFFSET "+str(5*page)+" ")
         print("************")
         for i in cursor.fetchall():
             print(str(i[0])+" "+str(i[1]))
-            print("___________")
-            print(" ")
         print("************")
     elif fil=="/p":
-        cursor.execute("SELECT * FROM "+tname+" WHERE number LIKE '%"+pattern+"%'")
+        cursor.execute("SELECT * FROM "+tname+" WHERE number LIKE '%"+pattern+"%' ORDER BY name LIMIT 5 OFFSET "+str(5*page)+" ")
         f=cursor.fetchall()
-        cursor.execute("SELECT * FROM "+tname+" WHERE name LIKE '%"+pattern+"%'")
+        cursor.execute("SELECT * FROM "+tname+" WHERE name LIKE '%"+pattern+"%' ORDER BY name LIMIT 5 OFFSET "+str(5*page)+" ")
         g=cursor.fetchall()
         print("************")
         for i in f:
             print(str(i[0])+" "+str(i[1]))
-            print("___________")
-            print(" ")
         for j in g:
             print(str(j[0])+" "+str(j[1]))
-            print("___________")
-            print(" ")
         print("************")
+
     '''elif fil=="+7":
         cursor.execute("SELECT * FROM "+tname+" WHERE number LIKE '+7%'")
         print("************")
@@ -110,6 +106,13 @@ def show(fil="all",pattern=" "):
             print(" ")
         print("************")'''
 
+def shall():
+    cursor.execute("SELECT * FROM "+tname+" ORDER BY name")
+    print("************")
+    for i in cursor.fetchall():
+        print(str(i[0])+" "+str(i[1]))
+    print("************")
+
 while run:
     s=input()
     ss=s.split(", ")
@@ -122,13 +125,16 @@ while run:
                 ss=s.split(", ")
                 if not ss[0]=="." and len(ss)>1:
                     update(ss[0], ss[1])
+        cursor.execute("COMMIT")
     elif ss[0]=="up" and len(ss)>2:
         update(ss[1],ss[2])
     elif ss[0]=="sh":
-        if len(ss)==2:
-            show(ss[1])
-        elif len(ss)==3:
-            show(ss[1], ss[2])
+        if len(ss)==3:
+            show(int(ss[1]),ss[2])
+        elif len(ss)==4:
+            show(int(ss[1]), ss[2],ss[3])
+        elif len(ss)==2:
+            show(int(ss[1]))
         else:
             show()
     elif ss[0]=="ex":
@@ -136,5 +142,7 @@ while run:
         run=False
     elif ss[0] == "del" and len(ss)>1:
         delete(ss[1])
+    elif ss[0]=="shall":
+        shall()
 
 
