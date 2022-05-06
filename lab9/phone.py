@@ -12,15 +12,17 @@ print("for EXIT enter 'ex'")
 
 tname="ph_b"
 rt=False
-rc=True
+rc=False
 
 file=open("phone_book.txt", "r")
-with open('phone_book2.csv', newline='') as csvfile:
-    ss = csv.reader(csvfile,)
-    print("reading")
-    for row in ss:
-        cursor.execute("INSERT INTO "+tname+" VALUES ('"+row[0]+"' , '"+row[1]+"')")
-        print("inserted")
+if rc:
+    with open('phone_book2.csv', newline='') as csvfile:
+        ss = csv.reader(csvfile,)
+        #print("reading")
+
+        for row in ss:
+            cursor.execute("INSERT INTO "+tname+" VALUES ('"+row[0]+"' , '"+row[1]+"')")
+            #print("inserted")
 
 cursor.execute("CREATE TABLE IF NOT EXISTS "+tname+"(name text, number text)")
 
@@ -31,7 +33,11 @@ if rt:
 
 
 def insert(name, num):
-    cursor.execute("INSERT INTO "+tname+" VALUES ('"+name+"' , '"+num+"')")
+    if num.isdigit() and len(num)==11:
+        cursor.execute("INSERT INTO "+tname+" VALUES ('"+name+"' , '"+num+"')")
+    else:
+        print("!!  incorrect phone number  !!")
+        print("!! "+name+" , "+num+" !!")
 
 def update(name, newnum):
     cursor.execute("SELECT name FROM "+tname+" WHERE EXISTS (SELECT name FROM "+tname+" WHERE name = '"+name+"')")
@@ -52,16 +58,18 @@ def update(name, newnum):
     else:
         insert(name , newnum)
 def delete(contact):
-    cursor.execute("SELECT name FROM "+tname+" WHERE EXISTS (SELECT name FROM "+tname+" WHERE name = '"+contact+"')")
-    f=cursor.fetchall()
-    cursor.execute("SELECT name FROM "+tname+" WHERE EXISTS (SELECT number FROM "+tname+" WHERE number = '"+contact+"')")
-    g=cursor.fetchall()
-    if f:
-        cursor.execute("DELETE FROM "+tname+" WHERE name = '"+contact+"'")
-    elif g:
-        cursor.execute("DELETE FROM "+tname+" WHERE number = '"+contact+"'")
-    
-def show(fil):
+    if not contact=="all":
+        cursor.execute("SELECT name FROM "+tname+" WHERE EXISTS (SELECT name FROM "+tname+" WHERE name = '"+contact+"')")
+        f=cursor.fetchall()
+        cursor.execute("SELECT name FROM "+tname+" WHERE EXISTS (SELECT number FROM "+tname+" WHERE number = '"+contact+"')")
+        g=cursor.fetchall()
+        if f:
+            cursor.execute("DELETE FROM "+tname+" WHERE name = '"+contact+"'")
+        elif g:
+            cursor.execute("DELETE FROM "+tname+" WHERE number = '"+contact+"'")
+    else:
+        cursor.execute("DELETE FROM "+tname+" ")
+def show(fil="all",pattern=" "):
     if fil=="all":
         cursor.execute("SELECT * FROM "+tname+" ")
         print("************")
@@ -70,7 +78,22 @@ def show(fil):
             print("___________")
             print(" ")
         print("************")
-    elif fil=="+7":
+    elif fil=="/p":
+        cursor.execute("SELECT * FROM "+tname+" WHERE number LIKE '%"+pattern+"%'")
+        f=cursor.fetchall()
+        cursor.execute("SELECT * FROM "+tname+" WHERE name LIKE '%"+pattern+"%'")
+        g=cursor.fetchall()
+        print("************")
+        for i in f:
+            print(str(i[0])+" "+str(i[1]))
+            print("___________")
+            print(" ")
+        for j in g:
+            print(str(j[0])+" "+str(j[1]))
+            print("___________")
+            print(" ")
+        print("************")
+    '''elif fil=="+7":
         cursor.execute("SELECT * FROM "+tname+" WHERE number LIKE '+7%'")
         print("************")
         for i in cursor.fetchall():
@@ -85,21 +108,33 @@ def show(fil):
             print(str(i[0])+" "+str(i[1]))
             print("___________")
             print(" ")
-        print("************")
+        print("************")'''
 
 while run:
     s=input()
-    ss=s.split(",")
+    ss=s.split(", ")
     if ss[0]=="add":
-        update(ss[1], ss[2])
-    elif ss[0]=="up":
+        if not ss[1]=="/m":
+            update(ss[1], ss[2])
+        else:
+            while not ss[0]==".":
+                s=input()
+                ss=s.split(", ")
+                if not ss[0]=="." and len(ss)>1:
+                    update(ss[0], ss[1])
+    elif ss[0]=="up" and len(ss)>2:
         update(ss[1],ss[2])
     elif ss[0]=="sh":
-        show(ss[1])
+        if len(ss)==2:
+            show(ss[1])
+        elif len(ss)==3:
+            show(ss[1], ss[2])
+        else:
+            show()
     elif ss[0]=="ex":
         cursor.execute("COMMIT")
         run=False
-    elif ss[0] == "del":
+    elif ss[0] == "del" and len(ss)>1:
         delete(ss[1])
 
 
